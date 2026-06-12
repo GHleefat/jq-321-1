@@ -26,6 +26,7 @@ export interface AppState {
   playState: PlayState;
   settings: UserSettings;
   isFullscreen: boolean;
+  lineOffsets: number[];
 }
 
-export type Direction = 'prev' | 'next';
+export type Direction = "prev" | "next";

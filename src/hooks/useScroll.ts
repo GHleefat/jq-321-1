@@ -12,7 +12,7 @@ export function useScroll({ enabled, viewportHeight }: UseScrollOptions) {
   const animationRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(0);
 
-  const { lyrics, settings, playState, updateScrollTop, setPlayState } = useLyricStore();
+  const { lyrics, settings, playState, updateScrollTop, setPlayState, lineOffsets } = useLyricStore();
 
   const scrollContent = useCallback(
     (timestamp: number) => {
@@ -26,12 +26,17 @@ export function useScroll({ enabled, viewportHeight }: UseScrollOptions) {
       const speed = calculateScrollSpeed(settings.scrollSpeed);
       const deltaScroll = speed * deltaTime * 60;
 
-      const lineHeight = getLineHeight(settings.fontSize, settings.lineHeight);
-      const totalHeight = calculateTotalScrollHeight(
-        lyrics.length,
-        settings.fontSize,
-        settings.lineHeight
-      );
+      let totalHeight: number;
+      if (lineOffsets.length === lyrics.length && lyrics.length > 0) {
+        const lastLineHeight = getLineHeight(settings.fontSize, settings.lineHeight) * 1.5;
+        totalHeight = lineOffsets[lineOffsets.length - 1] + lastLineHeight;
+      } else {
+        totalHeight = calculateTotalScrollHeight(
+          lyrics.length,
+          settings.fontSize,
+          settings.lineHeight
+        );
+      }
       const maxScroll = Math.max(0, totalHeight - viewportHeight / 2);
 
       let newScrollTop = playState.scrollTop + deltaScroll;
@@ -50,6 +55,7 @@ export function useScroll({ enabled, viewportHeight }: UseScrollOptions) {
     [
       enabled,
       lyrics.length,
+      lineOffsets,
       playState.isPlaying,
       playState.scrollTop,
       settings,
